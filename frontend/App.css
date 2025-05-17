@@ -1,0 +1,258 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    color: #fff;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 20px;
+}
+
+.card {
+    position: relative;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 40px;
+    width: 80%;
+    max-width: 600px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    overflow: hidden;
+    z-index: 1;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    animation: cardAppear 1s ease forwards;
+}
+
+.pulse {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(45deg, #ff5e62, #ff9966);
+    border-radius: 50%;
+    opacity: 0.5;
+    top: -50px;
+    right: -50px;
+    z-index: -1;
+    animation: pulse 3s infinite;
+}
+
+.title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    background: linear-gradient(45deg, #00dbde, #fc00ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: slideDown 0.8s ease forwards;
+}
+
+.highlight {
+    font-weight: 800;
+    background: linear-gradient(45deg, #ffb347, #ffcc33);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+    margin: 20px 0;
+    font-size: 1.1rem;
+    opacity: 0;
+    animation: fadeIn 0.8s ease 0.3s forwards;
+}
+
+.clock-container {
+    display: flex;
+    justify-content: center;
+    margin: 30px 0;
+    perspective: 1000px;
+}
+
+.clock {
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #121212, #2d2d2d);
+    box-shadow: 8px 8px 16px #0a0a0a,
+        -8px -8px 16px #2a2a2a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    transform-style: preserve-3d;
+    transform: rotateY(0deg);
+    transition: transform 0.6s ease;
+    animation: rotateIn 1s ease;
+}
+
+.clock.loading {
+    animation: loading 1.5s infinite;
+}
+
+.clock-face {
+    width: 80%;
+    height: 80%;
+    background: linear-gradient(135deg, #2b5876, #4e4376);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transform: translateZ(10px);
+    box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+.time {
+    font-size: 1.3rem;
+    font-weight: 300;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+}
+
+.tech-stack {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 30px;
+    opacity: 0;
+    animation: slideUp 0.8s ease 0.6s forwards;
+}
+
+.tech-item {
+    padding: 8px 16px;
+    background: linear-gradient(45deg, #4158D0, #C850C0, #FFCC70);
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.tech-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Анімації */
+@keyframes pulse {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.5;
+    }
+
+    50% {
+        transform: scale(1.2);
+        opacity: 0.3;
+    }
+
+    100% {
+        transform: scale(0.8);
+        opacity: 0.5;
+    }
+}
+
+@keyframes cardAppear {
+    0% {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideDown {
+    0% {
+        transform: translateY(-30px);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    0% {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes rotateIn {
+    0% {
+        transform: rotateY(90deg);
+    }
+
+    100% {
+        transform: rotateY(0deg);
+    }
+}
+
+@keyframes loading {
+    0% {
+        box-shadow: 0 0 5px rgba(66, 135, 245, 0.5);
+    }
+
+    50% {
+        box-shadow: 0 0 20px rgba(66, 135, 245, 0.8);
+    }
+
+    100% {
+        box-shadow: 0 0 5px rgba(66, 135, 245, 0.5);
+    }
+}
+
+/* Адаптивний дизайн */
+@media (max-width: 768px) {
+    .card {
+        width: 95%;
+        padding: 30px 20px;
+    }
+
+    .title {
+        font-size: 1.8rem;
+    }
+
+    .clock {
+        width: 180px;
+        height: 180px;
+    }
+
+    .time {
+        font-size: 1.1rem;
+    }
+}
