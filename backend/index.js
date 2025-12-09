@@ -7,7 +7,7 @@
 const express = require("express"); // Веб-фреймворк для Node.js
 const { Client } = require("pg");   // Драйвер для роботи з PostgreSQL
 const app = express();              // Створюємо екземпляр Express додатку
-const port = 3000;                  // Порт, на якому буде запущено сервер
+const port = process.env.PORT || 3001; // Backend server port
 
 // Ініціалізація з'єднання з базою даних
 const db = new Client({
