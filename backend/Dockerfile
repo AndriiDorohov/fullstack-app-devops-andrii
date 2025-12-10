@@ -1,6 +1,9 @@
 # Use Node.js 18 LTS as base image
 FROM node:18-alpine
 
+# Install curl for in-container healthchecks
+RUN apk add --no-cache curl
+
 # Set working directory inside the container
 WORKDIR /app
 

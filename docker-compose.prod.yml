@@ -11,6 +11,7 @@ services:
     volumes:
       - pgdata_prod:/var/lib/postgresql/data
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    restart: unless-stopped
 
   backend:
     image: ${DOCKERHUB_USERNAME}/fullstack-app-backend:latest
@@ -22,6 +23,13 @@ services:
       - db
     ports:
       - "3001:3001"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3001/api || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   frontend:
     image: ${DOCKERHUB_USERNAME}/fullstack-app-frontend:latest
@@ -30,6 +38,13 @@ services:
       - backend
     ports:
       - "3000:80"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
 volumes:
   pgdata_prod:

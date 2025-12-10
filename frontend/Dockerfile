@@ -15,6 +15,9 @@ RUN npm run build
 # Stage 2: Serve built app with Nginx
 FROM nginx:1.27-alpine
 
+# Install curl for in-container healthchecks
+RUN apk add --no-cache curl
+
 # Remove default Nginx configuration
 RUN rm /etc/nginx/conf.d/default.conf
 
