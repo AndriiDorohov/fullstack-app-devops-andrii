@@ -1,0 +1,35 @@
+services:
+  db:
+    image: postgres:16
+    container_name: fsapp-postgres-prod
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata_prod:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  backend:
+    image: ${DOCKERHUB_USERNAME}/fullstack-app-backend:latest
+    container_name: fsapp-backend-prod
+    environment:
+      - PORT=${BACKEND_PORT}
+      - DATABASE_URL=${DATABASE_URL}
+    depends_on:
+      - db
+    ports:
+      - "3001:3001"
+
+  frontend:
+    image: ${DOCKERHUB_USERNAME}/fullstack-app-frontend:latest
+    container_name: fsapp-frontend-prod
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+volumes:
+  pgdata_prod:
