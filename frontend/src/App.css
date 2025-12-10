@@ -11,14 +11,14 @@ body {
     background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
     color: #fff;
     height: 100vh;
-    overflow: hidden;
+    overflow: hidden; /* hide global scrollbar to keep hero look */
 }
 
 .container {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    height: 100vh; /* full viewport height */
     padding: 20px;
 }
 
@@ -30,14 +30,27 @@ body {
     padding: 40px;
     width: 80%;
     max-width: 600px;
+    max-height: 90vh;       /* keep card within viewport */
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
     text-align: center;
-    overflow: hidden;
+    overflow-y: auto;       /* allow scroll inside card if content is tall */
     z-index: 1;
     border: 1px solid rgba(255, 255, 255, 0.1);
     animation: cardAppear 1s ease forwards;
 }
 
+/* hide scrollbar inside card (but keep scroll functionality) */
+.card::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+}
+
+.card {
+    scrollbar-width: none;       /* Firefox */
+    -ms-overflow-style: none;    /* IE/Edge */
+}
+
+/* Pulse circle in the corner */
 .pulse {
     position: absolute;
     width: 100px;
@@ -87,7 +100,8 @@ body {
     height: 240px;
     border-radius: 50%;
     background: linear-gradient(145deg, #121212, #2d2d2d);
-    box-shadow: 8px 8px 16px #0a0a0a,
+    box-shadow:
+        8px 8px 16px #0a0a0a,
         -8px -8px 16px #2a2a2a;
     display: flex;
     justify-content: center;
@@ -146,6 +160,184 @@ body {
 .tech-item:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Tasks section */
+
+.tasks-section {
+    margin-top: 30px;
+    text-align: left;
+}
+
+.tasks-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    background: linear-gradient(45deg, #00dbde, #fc00ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.tasks-form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.tasks-input {
+    flex: 1;
+    padding: 10px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(10, 10, 30, 0.7);
+    color: #fff;
+    font-size: 0.95rem;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.tasks-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.tasks-input:focus {
+    border-color: #00dbde;
+    box-shadow: 0 0 0 2px rgba(0, 219, 222, 0.2);
+    background: rgba(10, 10, 40, 0.9);
+}
+
+.tasks-add-button {
+    padding: 10px 18px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #0b0b1f;
+    background: linear-gradient(45deg, #00dbde, #fc00ff);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    white-space: nowrap;
+}
+
+.tasks-add-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
+}
+
+.tasks-add-button:active {
+    transform: translateY(0);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+}
+
+.tasks-error {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    color: #ff8080;
+    font-size: 0.9rem;
+}
+
+.tasks-loading {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.tasks-empty {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: 5px;
+}
+
+.tasks-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 220px;
+    overflow-y: auto; /* inner scroll if many tasks */
+}
+
+/* hide scrollbar inside tasks list */
+.tasks-list::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+}
+
+.tasks-list {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.task-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: rgba(10, 10, 35, 0.8);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.task-main {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.task-title {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #ffffff;
+}
+
+.task-title.done {
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
+.task-status {
+    font-size: 0.8rem;
+    color: rgba(200, 200, 255, 0.8);
+    margin-top: 2px;
+}
+
+.task-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.task-button {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.task-button.toggle {
+    background: rgba(0, 219, 222, 0.2);
+    color: #00dbde;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+}
+
+.task-button.toggle:hover {
+    background: rgba(0, 219, 222, 0.35);
+    transform: translateY(-1px);
+}
+
+.task-button.delete {
+    background: rgba(255, 94, 98, 0.18);
+    color: #ff8080;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+}
+
+.task-button.delete:hover {
+    background: rgba(255, 94, 98, 0.3);
+    transform: translateY(-1px);
 }
 
 /* Анімації */
@@ -241,6 +433,7 @@ body {
     .card {
         width: 95%;
         padding: 30px 20px;
+        max-height: 95vh;
     }
 
     .title {
@@ -254,5 +447,23 @@ body {
 
     .time {
         font-size: 1.1rem;
+    }
+
+    .tasks-form {
+        flex-direction: column;
+    }
+
+    .tasks-add-button {
+        width: 100%;
+    }
+
+    .task-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    .task-actions {
+        align-self: flex-end;
     }
 }

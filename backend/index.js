@@ -1,100 +1,156 @@
-/**
- * Головний файл серверної частини додатку
- * Реалізує REST API для отримання поточного часу з бази даних PostgreSQL
- */
+const express = require('express');
+const { Client } = require('pg');
 
-// Імпортуємо необхідні модулі
-const express = require("express"); // Веб-фреймворк для Node.js
-const { Client } = require("pg");   // Драйвер для роботи з PostgreSQL
-const app = express();              // Створюємо екземпляр Express додатку
+const app = express();
+
+// Enable JSON body parsing for incoming requests
+app.use(express.json());
+
 const port = process.env.PORT || 3001; // Backend server port
+const connectionString = process.env.DATABASE_URL;
 
-// Ініціалізація з'єднання з базою даних
-const db = new Client({
-    connectionString: process.env.DATABASE_URL // Отримуємо URL-підключення з змінних середовища
-});
-db.connect(); // Підключаємося до бази даних
+console.log('DATABASE_URL:', connectionString);
 
-// Додаємо CORS middleware для дозволу крос-доменних запитів
-app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');                 // Дозволяємо запити з будь-якого джерела
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS'); // Дозволяємо вказані HTTP методи
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');     // Дозволяємо заголовок Content-Type
-    next(); // Передаємо керування наступному middleware
-});
+// Try to connect to the database with simple retry logic
+async function connectWithRetry(retries = 10, delayMs = 2000) {
+  let attempt = 0;
 
-// Додаємо маршрут для кореневого URL
-app.get("/", (req, res) => {
-    res.send("Backend API працює! Відвідайте /api для отримання часу з бази даних.");
-});
+  while (attempt < retries) {
+    attempt += 1;
+    console.log(`Attempting to connect to the database (${attempt}/${retries})...`);
 
-app.get("/api", async (req, res) => {
+    const client = new Client({ connectionString });
+
     try {
-        // Виконуємо SQL-запит для отримання поточного часу з бази даних
-        const result = await db.query("SELECT NOW()");
-        // Відправляємо результат у форматі JSON
-        res.json({ time: result.rows[0].now });
+      await client.connect();
+      console.log('Successfully connected to the database!');
+
+      const res = await client.query('SELECT current_database()');
+      console.log('Connected to database:', res.rows[0].current_database);
+
+      return client;
     } catch (error) {
-        // Обробка помилок при виконанні запиту
-        console.error("Помилка при виконанні запиту:", error);
-        res.status(500).json({ error: "Помилка сервера" });
+      console.error('Database connection error:', error.message);
+
+      if (attempt === retries) {
+        throw error;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
     }
-});
-
-// Виводимо інформацію про підключення до БД
-console.log("DATABASE_URL:", process.env.DATABASE_URL);
-
-// Функція для підключення до бази даних з повторними спробами
-async function connectWithRetry(maxRetries = 10, delay = 5000) {
-    let retries = 0;
-
-    while (retries < maxRetries) {
-        try {
-            console.log(`Спроба підключення до бази даних (${retries + 1}/${maxRetries})...`);
-            const client = new Client({ connectionString: process.env.DATABASE_URL });
-            await client.connect();
-            console.log("Успішне підключення до бази даних!");
-
-            // Перевірка бази даних
-            const testResult = await client.query('SELECT current_database() as db_name');
-            console.log("Підключено до бази даних:", testResult.rows[0].db_name);
-
-            return client;
-        } catch (err) {
-            console.error("Помилка підключення до бази даних:", err.message);
-            retries++;
-            if (retries >= maxRetries) {
-                console.error("Досягнуто максимальної кількості спроб. Не вдалося підключитися до бази даних.");
-                throw err;
-            }
-            console.log(`Повторна спроба через ${delay / 1000} секунд...`);
-            await new Promise(resolve => setTimeout(resolve, delay));
-        }
-    }
+  }
 }
 
-// Запускаємо сервер, потім намагаємося підключитися до БД
-app.listen(port, () => {
-    console.log("Backend running");
+let dbClient;
 
-    // Підключення до бази даних з повторними спробами
-    connectWithRetry()
-        .then(client => {
-            // Зберігаємо клієнт для використання в запитах
-            app.locals.dbClient = client;
+// Initialize database connection and start server
+(async () => {
+  try {
+    dbClient = await connectWithRetry();
 
-            // Налаштовуємо API ендпоінт після успішного підключення
-            app.get("/api", async (req, res) => {
-                try {
-                    const result = await app.locals.dbClient.query("SELECT NOW()");
-                    res.json({ time: result.rows[0].now });
-                } catch (err) {
-                    console.error("Помилка запиту до бази даних:", err);
-                    res.status(500).json({ error: "Помилка бази даних" });
-                }
-            });
-        })
-        .catch(err => {
-            console.error("Не вдалося запустити додаток через помилку бази даних:", err);
-        });
+    app.listen(port, () => {
+      console.log(`Backend running on port ${port}`);
+    });
+  } catch (error) {
+    console.error(
+      'Failed to connect to the database. Server will not be started.'
+    );
+    process.exit(1);
+  }
+})();
+
+// Routes
+
+// Health route
+app.get('/', (req, res) => {
+  res.send('Backend API is running! Visit /api to get the time from the database.');
+});
+
+// Simple time endpoint (uses PostgreSQL NOW())
+app.get('/api', async (req, res) => {
+  try {
+    const result = await dbClient.query('SELECT NOW() AS time');
+    res.json({ time: result.rows[0].time });
+  } catch (error) {
+    console.error('Error querying time:', error);
+    res.status(500).json({ error: 'Failed to get time from database' });
+  }
+});
+
+// ---- Tasks API ----
+
+// GET /api/tasks - get all tasks
+app.get('/api/tasks', async (req, res) => {
+  try {
+    const result = await dbClient.query(
+      'SELECT id, title, is_done, created_at FROM tasks ORDER BY created_at DESC'
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching tasks:', error);
+    res.status(500).json({ error: 'Failed to fetch tasks' });
+  }
+});
+
+// POST /api/tasks - create new task
+app.post('/api/tasks', async (req, res) => {
+  const { title } = req.body;
+
+  if (!title || !title.trim()) {
+    return res.status(400).json({ error: 'Title is required' });
+  }
+
+  try {
+    const result = await dbClient.query(
+      'INSERT INTO tasks (title) VALUES ($1) RETURNING id, title, is_done, created_at',
+      [title.trim()]
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error creating task:', error);
+    res.status(500).json({ error: 'Failed to create task' });
+  }
+});
+
+// PATCH /api/tasks/:id/toggle - toggle is_done flag
+app.patch('/api/tasks/:id/toggle', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await dbClient.query(
+      'UPDATE tasks SET is_done = NOT is_done WHERE id = $1 RETURNING id, title, is_done, created_at',
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error updating task:', error);
+    res.status(500).json({ error: 'Failed to update task' });
+  }
+});
+
+// DELETE /api/tasks/:id - delete task
+app.delete('/api/tasks/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await dbClient.query(
+      'DELETE FROM tasks WHERE id = $1 RETURNING id',
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+
+    res.status(204).send();
+  } catch (error) {
+    console.error('Error deleting task:', error);
+    res.status(500).json({ error: 'Failed to delete task' });
+  }
 });
