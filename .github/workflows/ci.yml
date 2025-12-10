@@ -17,7 +17,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: "npm"
+    # cache is disabled for simplicity; lockfiles live in subfolders
+#          cache: "npm"
 
       # Backend: just install dependencies to be sure it is installable
       - name: Install backend dependencies
